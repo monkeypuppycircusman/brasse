@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRASSE — Brass Section</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Josefin+Sans:wght@100;300;400;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --void:    #040302;
+  --deep:    #080604;
+  --mahog:   #0e0906;
+  --wood:    #160c06;
+  --grain:   #1e1208;
+  --plank:   #261608;
+  --ridge:   #301a0a;
+  --felt:    #1a0e08;
+
+  --brass:   #c8880a;
+  --brass2:  #e0a820;
+  --brass3:  #f0c840;
+  --brass4:  #f8e080;
+  --brass-dim:#1e1200;
+  --brass-glow: rgba(200,136,10,0.2);
+
+  --copper:  #b86020;
+  --copper2: #d07830;
+  --silver:  #a8a890;
+  --silver2: #c8c8b0;
+
+  --lacquer: rgba(200,136,10,0.06);
+  --sheen:   rgba(255,220,80,0.04);
+
+  --text:    #c8b88a;
+  --text2:   #786848;
+  --text3:   #443828;
+  --text4:   #281e10;
+
+  --font-hd: 'Josefin Sans', sans-serif;
+  --font-bd: 'Libre Baskerville', serif;
+  --font-mn: 'Share Tech Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--void);
+  min-height: 100vh;
+  font-family: var(--font-mn);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* Wood grain texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      transparent 0px,
+      rgba(200,136,10,.008) 1px,
+      transparent 3px,
+      rgba(0,0,0,.015) 4px,
+      transparent 6px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      rgba(200,136,10,.004) 2px,
+      transparent 4px
+    );
+  pointer-events: none; z-index: 0;
+}
+
+/* Ambient warm glow from bottom */
+body::after {
+  content: '';
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 40%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(200,100,10,.06) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+#app {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 1020px;
+  padding: 24px 20px 36px;
+  display: flex; flex-direction: column;
+  gap: 12px;
+}
+
+/* ── HEADER ── */
+#hdr {
+  display: flex; align-items: flex-end;
+  gap: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ridge);
+  position: relative;
+}
+
+#hdr::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--brass-dim), var(--brass2), var(--brass-dim), transparent);
+}
+
+#logo {
+  font-family: var(--font-hd);
+  font-size: 52px;
+  font-weight: 100;
+  letter-spacing: 18px;
+  color: var(--brass2);
+  text-shadow: 0 0 30px rgba(200,136,10,.3), 0 2px 0 rgba(0,0,0,.5);
+  line-height: 1;
+}
+
+#logo-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--ridge), transparent);
+  margin-bottom: 8px;
+}
+
+#hdr-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+
+#note-readout {
+  font-family: var(--font-hd);
+  font-size: 28px; font-weight: 300;
+  letter-spacing: 4px;
+  color: var(--brass3);
+  text-shadow: 0 0 14px rgba(200,136,10,.4);
+  line-height: 1;
+  min-width: 70px; text-align: right;
+}
+
+#freq-readout {
+  font-family: var(--font-mn);
+  font-size: 9px; letter-spacing: 2px;
+  color: var(--text3);
+}
+
+/* ── INSTRUMENT CARDS ── */
+#instruments {
+  display: flex; gap: 8px;
+}
+
+.inst-card {
+  flex: 1;
+  background: linear-gradient(180deg, var(--grain) 0%, var(--mahog) 100%);
+  border: 1px solid var(--ridge);
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+
+.inst-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--sheen) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.inst-card:hover { border-color: var(--brass-dim); }
+
+.inst-card.active {
+  border-color: var(--brass);
+  box-shadow: 0 0 16px rgba(200,136,10,.2), inset 0 0 0 1px rgba(200,136,10,.1);
+}
+
+.inst-card.active::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brass), transparent);
+}
+
+.inst-top {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--text4);
+}
+
+.inst-glyph {
+  font-family: var(--font-hd);
+  font-size: 32px; font-weight: 100;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 2px;
+  transition: color .15s, text-shadow .15s;
+}
+
+.inst-card.active .inst-glyph {
+  text-shadow: 0 0 12px currentColor;
+}
+
+.inst-name {
+  font-family: var(--font-hd);
+  font-size: 8px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--text3);
+}
+
+.inst-card.active .inst-name { color: var(--brass2); }
+
+.inst-range {
+  font-family: var(--font-bd);
+  font-size: 9px; font-style: italic;
+  color: var(--text4);
+  margin-top: 2px;
+}
+
+.inst-body {
+  padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+/* Mute toggle */
+.mute-row {
+  display: flex; gap: 5px; flex-wrap: wrap;
+}
+
+.mute-btn {
+  font-family: var(--font-mn);
+  font-size: 7px; letter-spacing: 1px;
+  padding: 3px 6px;
+  border: 1px solid var(--text4);
+  border-radius: 2px;
+  color: var(--text3);
+  background: transparent;
+  cursor: pointer;
+  transition: all .1s;
+  white-space: nowrap;
+}
+.mute-btn:hover { color: var(--text2); border-color: var(--text3); }
+.mute-btn.active {
+  color: var(--brass3);
+  border-color: var(--brass);
+  background: var(--brass-dim);
+}
+
+/* Per-instrument knobs */
+.inst-knobs {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+}
+
+/* Ensemble toggle */
+.ens-toggle {
+  width: 100%;
+  font-family: var(--font-mn);
+  font-size: 7px; letter-spacing: 2px; text-transform: uppercase;
+  padding: 4px;
+  border: 1px solid var(--text4);
+  border-radius: 2px;
+  color: var(--text3);
+  background: transparent;
+  cursor: pointer;
+  transition: all .12s;
+  text-align: center;
+  margin-top: 2px;
+}
+.ens-toggle:hover { color: var(--text2); }
+.ens-toggle.on {
+  color: var(--brass2);
+  border-color: var(--brass);
+  background: var(--brass-dim);
+}
+
+/* ── GLOBAL CONTROLS ── */
+#global-controls {
+  background: var(--mahog);
+  border: 1px solid var(--ridge);
+  border-radius: 5px;
+  padding: 12px 18px;
+  display: flex; gap: 18px; align-items: center;
+  flex-wrap: wrap;
+}
+
+.ctrl-group {
+  display: flex; flex-direction: column; gap: 5px;
+}
+
+.ctrl-lbl {
+  font-family: var(--font-mn);
+  font-size: 7px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--text3);
+}
+
+.ctrl-row { display: flex; gap: 10px; align-items: flex-end; }
+
+.kg { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+canvas.knob { cursor: ns-resize; display: block; }
+.kl { font-family: var(--font-mn); font-size: 7px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); text-align: center; }
+.kv { font-family: var(--font-mn); font-size: 9px; color: var(--text2); text-align: center; min-width: 28px; }
+
+/* Articulation buttons */
+.artic-btn {
+  font-family: var(--font-bd);
+  font-style: italic;
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid var(--text4);
+  border-radius: 2px;
+  color: var(--text2);
+  background: var(--grain);
+  cursor: pointer;
+  transition: all .1s;
+}
+.artic-btn:hover { color: var(--text); }
+.artic-btn.active {
+  color: var(--brass3);
+  border-color: var(--brass);
+  background: var(--brass-dim);
+}
+
+.vdiv { width: 1px; background: var(--ridge); align-self: stretch; flex-shrink: 0; }
+
+/* ── SPECTRUM / BREATH ── */
+#breath-wrap {
+  height: 48px;
+  background: var(--deep);
+  border: 1px solid var(--ridge);
+  border-radius: 4px;
+  overflow: hidden; position: relative;
+}
+#breath-canvas { display: block; width: 100%; height: 100%; }
+#breath-lbl {
+  position: absolute; top: 5px; left: 10px;
+  font-family: var(--font-mn); font-size: 7px;
+  letter-spacing: 2px; color: var(--text4); text-transform: uppercase;
+}
+
+/* ── KEYBOARD ── */
+#kb-section {
+  background: var(--deep);
+  border: 1px solid var(--ridge);
+  border-radius: 5px;
+  padding: 10px 14px 14px;
+  display: flex; gap: 10px; align-items: center;
+}
+
+#keyboard {
+  display: flex; height: 76px;
+  position: relative; flex: 1;
+  border: 1px solid var(--text4);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.key { position: relative; cursor: pointer; flex-shrink: 0; transition: background .04s; }
+
+.key.white {
+  background: linear-gradient(180deg, #e8e0d0 0%, #f5eed8 55%, #e0d8c0 100%);
+  border-right: 1px solid #9a8a70;
+  flex: 1; z-index: 1;
+}
+.key.white:hover { background: linear-gradient(180deg, #f0e8d8 0%, #faf4e4 55%, #e8e0c8 100%); }
+.key.white.active {
+  background: linear-gradient(180deg, var(--brass-dim) 0%, #2a1a04 55%, #1e1002 100%) !important;
+  border-color: var(--brass);
+  box-shadow: inset 0 0 8px rgba(200,136,10,.3);
+}
+
+.key.black {
+  background: linear-gradient(180deg, #1a1208 0%, #0e0c06 60%, #181208 100%);
+  position: absolute; width: 58%; height: 60%;
+  top: 0; z-index: 2;
+  border-radius: 0 0 3px 3px;
+  border: 1px solid #060402; border-top: none;
+  box-shadow: 1px 6px 10px rgba(0,0,0,.7);
+}
+.key.black:hover { background: linear-gradient(180deg, #261a0c 0%, #1a1208 60%, #222010 100%); }
+.key.black.active {
+  background: linear-gradient(180deg, var(--brass) 0%, var(--brass-dim) 60%) !important;
+  box-shadow: 0 0 10px rgba(200,136,10,.3);
+}
+
+.key-lbl {
+  position: absolute; bottom: 4px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mn); font-size: 7px;
+  color: rgba(80,60,30,.4); pointer-events: none; user-select: none;
+}
+.key.black .key-lbl { color: rgba(200,136,10,.2); bottom: 3px; }
+.key.active .key-lbl { color: rgba(200,136,10,.5); }
+
+/* Oct wheel */
+#oct-outer { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
+#oct-wheel {
+  width: 34px; height: 76px;
+  background: var(--void);
+  border: 1px solid var(--ridge);
+  border-radius: 3px;
+  overflow: hidden; cursor: ns-resize;
+  position: relative; user-select: none;
+}
+#oct-inner { position: absolute; top: 0; left: 0; right: 0; transition: transform .14s cubic-bezier(.22,.68,0,1.2); }
+.ow-slot {
+  height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mn); font-size: 8px;
+  color: var(--text3); border-bottom: 1px solid var(--text4); flex-shrink: 0;
+}
+.ow-slot.cur { color: var(--brass2); background: var(--brass-dim); border-color: var(--brass-dim); }
+#oct-wheel::before, #oct-wheel::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 14px; z-index: 2; pointer-events: none;
+}
+#oct-wheel::before { top: 0; background: linear-gradient(to bottom, var(--void), transparent); }
+#oct-wheel::after  { bottom: 0; background: linear-gradient(to top, var(--void), transparent); }
+#oct-lbl { font-family: var(--font-mn); font-size: 7px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+
+.kb-hint {
+  font-family: var(--font-bd);
+  font-style: italic; font-size: 11px;
+  color: var(--text3); line-height: 1.7;
+  flex-shrink: 0; padding-left: 8px;
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--ridge); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ── -->
+  <div id="hdr">
+    <div>
+      <div id="logo">BRASSE</div>
+      <div style="font-family:var(--font-bd);font-style:italic;font-size:12px;color:var(--text3);letter-spacing:2px;margin-top:3px;">Brass Section · Physical Model</div>
+    </div>
+    <div id="logo-rule"></div>
+    <div id="hdr-right">
+      <div id="note-readout">—</div>
+      <div id="freq-readout">— Hz</div>
+    </div>
+  </div>
+
+  <!-- ── INSTRUMENT CARDS ── -->
+  <div id="instruments">
+
+    <!-- TRUMPET -->
+    <div class="inst-card active" data-inst="trumpet">
+      <div class="inst-top">
+        <div class="inst-glyph" style="color:#e0a820;">𝄩</div>
+        <div class="inst-name">Trumpet</div>
+        <div class="inst-range">Bb3 – Bb6</div>
+      </div>
+      <div class="inst-body">
+        <div class="mute-row">
+          <button class="mute-btn active" data-mute="open">Open</button>
+          <button class="mute-btn" data-mute="straight">Straight</button>
+          <button class="mute-btn" data-mute="cup">Cup</button>
+          <button class="mute-btn" data-mute="harmon">Harmon</button>
+          <button class="mute-btn" data-mute="wah">Wah</button>
+        </div>
+        <div class="inst-knobs">
+          <div class="kg"><canvas class="knob inst-knob" id="k-t-bright" width="34" height="34" data-min="0" data-max="1" data-val="0.7" data-color="#e0a820" data-inst="trumpet" data-param="bright"></canvas><div class="kl">Bright</div><div class="kv" id="v-t-bright">0.70</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-t-growl" width="34" height="34" data-min="0" data-max="1" data-val="0" data-color="#c88010" data-inst="trumpet" data-param="growl"></canvas><div class="kl">Growl</div><div class="kv" id="v-t-growl">0.00</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-t-air" width="34" height="34" data-min="0" data-max="1" data-val="0.2" data-color="#a86808" data-inst="trumpet" data-param="air"></canvas><div class="kl">Air</div><div class="kv" id="v-t-air">0.20</div></div>
+        </div>
+        <button class="ens-toggle" data-inst="trumpet">+ Ensemble</button>
+      </div>
+    </div>
+
+    <!-- FLUGELHORN -->
+    <div class="inst-card" data-inst="flugelhorn">
+      <div class="inst-top">
+        <div class="inst-glyph" style="color:#d09018;">♩</div>
+        <div class="inst-name">Flugelhorn</div>
+        <div class="inst-range">Bb3 – Bb5</div>
+      </div>
+      <div class="inst-body">
+        <div class="mute-row">
+          <button class="mute-btn active" data-mute="open">Open</button>
+          <button class="mute-btn" data-mute="straight">Straight</button>
+          <button class="mute-btn" data-mute="cup">Cup</button>
+        </div>
+        <div class="inst-knobs">
+          <div class="kg"><canvas class="knob inst-knob" id="k-f-bright" width="34" height="34" data-min="0" data-max="1" data-val="0.4" data-color="#d09018" data-inst="flugelhorn" data-param="bright"></canvas><div class="kl">Bright</div><div class="kv" id="v-f-bright">0.40</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-f-growl" width="34" height="34" data-min="0" data-max="1" data-val="0" data-color="#b07810" data-inst="flugelhorn" data-param="growl"></canvas><div class="kl">Growl</div><div class="kv" id="v-f-growl">0.00</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-f-air" width="34" height="34" data-min="0" data-max="1" data-val="0.35" data-color="#906008" data-inst="flugelhorn" data-param="air"></canvas><div class="kl">Air</div><div class="kv" id="v-f-air">0.35</div></div>
+        </div>
+        <button class="ens-toggle" data-inst="flugelhorn">+ Ensemble</button>
+      </div>
+    </div>
+
+    <!-- FRENCH HORN -->
+    <div class="inst-card" data-inst="frenchhorn">
+      <div class="inst-top">
+        <div class="inst-glyph" style="color:#c87818;">𝄫</div>
+        <div class="inst-name">French Horn</div>
+        <div class="inst-range">F2 – C6</div>
+      </div>
+      <div class="inst-body">
+        <div class="mute-row">
+          <button class="mute-btn active" data-mute="open">Open</button>
+          <button class="mute-btn" data-mute="stopped">Stopped</button>
+          <button class="mute-btn" data-mute="muted">Muted</button>
+        </div>
+        <div class="inst-knobs">
+          <div class="kg"><canvas class="knob inst-knob" id="k-h-bright" width="34" height="34" data-min="0" data-max="1" data-val="0.35" data-color="#c87818" data-inst="frenchhorn" data-param="bright"></canvas><div class="kl">Bright</div><div class="kv" id="v-h-bright">0.35</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-h-growl" width="34" height="34" data-min="0" data-max="1" data-val="0" data-color="#a86010" data-inst="frenchhorn" data-param="growl"></canvas><div class="kl">Growl</div><div class="kv" id="v-h-growl">0.00</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-h-air" width="34" height="34" data-min="0" data-max="1" data-val="0.4" data-color="#886008" data-inst="frenchhorn" data-param="air"></canvas><div class="kl">Air</div><div class="kv" id="v-h-air">0.40</div></div>
+        </div>
+        <button class="ens-toggle" data-inst="frenchhorn">+ Ensemble</button>
+      </div>
+    </div>
+
+    <!-- TROMBONE -->
+    <div class="inst-card" data-inst="trombone">
+      <div class="inst-top">
+        <div class="inst-glyph" style="color:#b86820;">𝄪</div>
+        <div class="inst-name">Trombone</div>
+        <div class="inst-range">Bb1 – Bb4</div>
+      </div>
+      <div class="inst-body">
+        <div class="mute-row">
+          <button class="mute-btn active" data-mute="open">Open</button>
+          <button class="mute-btn" data-mute="straight">Straight</button>
+          <button class="mute-btn" data-mute="plunger">Plunger</button>
+          <button class="mute-btn" data-mute="harmon">Harmon</button>
+        </div>
+        <div class="inst-knobs">
+          <div class="kg"><canvas class="knob inst-knob" id="k-b-bright" width="34" height="34" data-min="0" data-max="1" data-val="0.5" data-color="#b86820" data-inst="trombone" data-param="bright"></canvas><div class="kl">Bright</div><div class="kv" id="v-b-bright">0.50</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-b-growl" width="34" height="34" data-min="0" data-max="1" data-val="0" data-color="#985010" data-inst="trombone" data-param="growl"></canvas><div class="kl">Growl</div><div class="kl" style="height:0"></div><div class="kv" id="v-b-growl">0.00</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-b-air" width="34" height="34" data-min="0" data-max="1" data-val="0.3" data-color="#784008" data-inst="trombone" data-param="air"></canvas><div class="kl">Air</div><div class="kv" id="v-b-air">0.30</div></div>
+        </div>
+        <button class="ens-toggle" data-inst="trombone">+ Ensemble</button>
+      </div>
+    </div>
+
+    <!-- TUBA -->
+    <div class="inst-card" data-inst="tuba">
+      <div class="inst-top">
+        <div class="inst-glyph" style="color:#a05818;">Ω</div>
+        <div class="inst-name">Tuba</div>
+        <div class="inst-range">D1 – F4</div>
+      </div>
+      <div class="inst-body">
+        <div class="mute-row">
+          <button class="mute-btn active" data-mute="open">Open</button>
+          <button class="mute-btn" data-mute="muted">Muted</button>
+        </div>
+        <div class="inst-knobs">
+          <div class="kg"><canvas class="knob inst-knob" id="k-u-bright" width="34" height="34" data-min="0" data-max="1" data-val="0.3" data-color="#a05818" data-inst="tuba" data-param="bright"></canvas><div class="kl">Bright</div><div class="kv" id="v-u-bright">0.30</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-u-growl" width="34" height="34" data-min="0" data-max="1" data-val="0" data-color="#804010" data-inst="tuba" data-param="growl"></canvas><div class="kl">Growl</div><div class="kv" id="v-u-growl">0.00</div></div>
+          <div class="kg"><canvas class="knob inst-knob" id="k-u-air" width="34" height="34" data-min="0" data-max="1" data-val="0.25" data-color="#603008" data-inst="tuba" data-param="air"></canvas><div class="kl">Air</div><div class="kv" id="v-u-air">0.25</div></div>
+        </div>
+        <button class="ens-toggle" data-inst="tuba">+ Ensemble</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── GLOBAL CONTROLS ── -->
+  <div id="global-controls">
+
+    <div class="ctrl-group">
+      <div class="ctrl-lbl">Articulation</div>
+      <div class="ctrl-row">
+        <button class="artic-btn active" data-artic="normal">Normal</button>
+        <button class="artic-btn" data-artic="staccato">Staccato</button>
+        <button class="artic-btn" data-artic="legato">Legato</button>
+        <button class="artic-btn" data-artic="marcato">Marcato</button>
+        <button class="artic-btn" data-artic="fall">Fall</button>
+      </div>
+    </div>
+
+    <div class="vdiv"></div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-lbl">Section</div>
+      <div class="ctrl-row">
+        <div class="kg">
+          <canvas class="knob" id="k-vibrato" width="40" height="40" data-min="0" data-max="1" data-val="0.2" data-color="#c8880a"></canvas>
+          <div class="kl">Vibrato</div><div class="kv" id="v-vibrato">0.20</div>
+        </div>
+        <div class="kg">
+          <canvas class="knob" id="k-vibrate" width="40" height="40" data-min="2" data-max="12" data-val="5" data-color="#b87808"></canvas>
+          <div class="kl">Vib Rate</div><div class="kv" id="v-vibrate">5.0</div>
+        </div>
+        <div class="kg">
+          <canvas class="knob" id="k-spread" width="40" height="40" data-min="0" data-max="20" data-val="4" data-color="#c8880a"></canvas>
+          <div class="kl">Spread</div><div class="kv" id="v-spread">4</div>
+        </div>
+        <div class="kg">
+          <canvas class="knob" id="k-attack" width="40" height="40" data-min="0.005" data-max="0.4" data-val="0.04" data-color="#e0a820"></canvas>
+          <div class="kl">Attack</div><div class="kv" id="v-attack">0.04</div>
+        </div>
+        <div class="kg">
+          <canvas class="knob" id="k-release" width="40" height="40" data-min="0.05" data-max="2" data-val="0.3" data-color="#e0a820"></canvas>
+          <div class="kl">Release</div><div class="kv" id="v-release">0.30</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vdiv"></div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-lbl">Space</div>
+      <div class="ctrl-row">
+        <div class="kg">
+          <canvas class="knob" id="k-hall" width="40" height="40" data-min="0" data-max="1" data-val="0.45" data-color="#8888c0"></canvas>
+          <div class="kl">Hall</div><div class="kv" id="v-hall">0.45</div>
+        </div>
+        <div class="kg">
+          <canvas class="knob" id="k-vol" width="46" height="46" data-min="0" data-max="1" data-val="0.78" data-color="#c8880a"></canvas>
+          <div class="kl">Volume</div><div class="kv" id="v-vol">0.78</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── BREATH DISPLAY ── -->
+  <div id="breath-wrap">
+    <canvas id="breath-canvas"></canvas>
+    <div id="breath-lbl">Breath pressure</div>
+  </div>
+
+  <!-- ── KEYBOARD ── -->
+  <div id="kb-section">
+    <div id="oct-outer">
+      <div id="oct-wheel"><div id="oct-inner"></div></div>
+      <div id="oct-lbl">Oct</div>
+    </div>
+    <div id="keyboard"></div>
+    <div class="kb-hint">ASDFGHJK · WETYU<br>Z/X octave shift</div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+// ══════════════════════════════════════════════════
+// BRASSE — Brass Section Synthesizer
+// ══════════════════════════════════════════════════
+
+let actx = null;
+function getCtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+let masterGain, reverbConv, reverbWet, reverbDry, analyser;
+let vibratoOsc, vibratoGain;
+let graphBuilt = false;
+
+const voices = new Map();
+
+// ── State ──
+const P = {
+  instrument: 'trumpet',
+  artic: 'normal',
+  vibrato: 0.2,
+  vibrate: 5,
+  spread: 4,
+  attack: 0.04,
+  release: 0.3,
+  hall: 0.45,
+  vol: 0.78,
+};
+
+// Per-instrument params
+const instParams = {
+  trumpet:   { bright:0.7, growl:0, air:0.2, mute:'open', ensemble:false },
+  flugelhorn:{ bright:0.4, growl:0, air:0.35, mute:'open', ensemble:false },
+  frenchhorn:{ bright:0.35, growl:0, air:0.4, mute:'open', ensemble:false },
+  trombone:  { bright:0.5, growl:0, air:0.3, mute:'open', ensemble:false },
+  tuba:      { bright:0.3, growl:0, air:0.25, mute:'open', ensemble:false },
+};
+
+// Instrument profiles
+const PROFILES = {
+  trumpet: {
+    baseFreqMult: 1,
+    partials: [
+      {m:1,  g:0.45}, {m:2,  g:0.30}, {m:3,  g:0.18},
+      {m:4,  g:0.12}, {m:5,  g:0.08}, {m:6,  g:0.05},
+      {m:7,  g:0.03}, {m:8,  g:0.02}, {m:9,  g:0.01},
+    ],
+    cutoffBase: 4000, cutoffBright: 8000,
+    bodyFreq: 1200, bodyQ: 3, bodyGain: 4,
+    buzzFreq: 320, color:'#e0a820',
+  },
+  flugelhorn: {
+    baseFreqMult: 1,
+    partials: [
+      {m:1,  g:0.5},  {m:2,  g:0.22}, {m:3,  g:0.12},
+      {m:4,  g:0.07}, {m:5,  g:0.04}, {m:6,  g:0.02},
+    ],
+    cutoffBase: 2800, cutoffBright: 6000,
+    bodyFreq: 900, bodyQ: 2, bodyGain: 3,
+    buzzFreq: 220, color:'#d09018',
+  },
+  frenchhorn: {
+    baseFreqMult: 1,
+    partials: [
+      {m:1,  g:0.4},  {m:2,  g:0.28}, {m:3,  g:0.16},
+      {m:4,  g:0.10}, {m:5,  g:0.07}, {m:6,  g:0.05},
+      {m:7,  g:0.03}, {m:8,  g:0.02},
+    ],
+    cutoffBase: 2200, cutoffBright: 5000,
+    bodyFreq: 700, bodyQ: 3.5, bodyGain: 5,
+    buzzFreq: 180, color:'#c87818',
+  },
+  trombone: {
+    baseFreqMult: 1,
+    partials: [
+      {m:1,  g:0.5},  {m:2,  g:0.26}, {m:3,  g:0.15},
+      {m:4,  g:0.09}, {m:5,  g:0.06}, {m:6,  g:0.04},
+      {m:7,  g:0.025},{m:8,  g:0.015},
+    ],
+    cutoffBase: 1800, cutoffBright: 4500,
+    bodyFreq: 500, bodyQ: 2.5, bodyGain: 4,
+    buzzFreq: 120, color:'#b86820',
+  },
+  tuba: {
+    baseFreqMult: 1,
+    partials: [
+      {m:1,  g:0.55}, {m:2,  g:0.20}, {m:3,  g:0.10},
+      {m:4,  g:0.06}, {m:5,  g:0.035},{m:6,  g:0.02},
+    ],
+    cutoffBase: 1200, cutoffBright: 3000,
+    bodyFreq: 300, bodyQ: 2, bodyGain: 5,
+    buzzFreq: 80, color:'#a05818',
+  },
+};
+
+// Mute profiles — filter adjustments
+const MUTE_PROFILES = {
+  open:     { cutoffMult:1.0,  Q:0.6, gain:0,   notch:null },
+  straight: { cutoffMult:0.6,  Q:3,   gain:-3,  notch:800  },
+  cup:      { cutoffMult:0.4,  Q:4,   gain:-5,  notch:600  },
+  harmon:   { cutoffMult:0.25, Q:8,   gain:-6,  notch:400  },
+  wah:      { cutoffMult:0.5,  Q:6,   gain:-4,  notch:700  },
+  plunger:  { cutoffMult:0.45, Q:5,   gain:-4,  notch:650  },
+  stopped:  { cutoffMult:0.3,  Q:5,   gain:-8,  notch:500  },
+  muted:    { cutoffMult:0.35, Q:3,   gain:-6,  notch:null },
+};
+
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function noteToFreq(n) { return 440 * Math.pow(2, (n - 69) / 12); }
+function noteName(n) { return NOTE_NAMES[((n%12)+12)%12] + (Math.floor(n/12)-1); }
+
+function buildGraph() {
+  if (graphBuilt) return; graphBuilt = true;
+  const c = getCtx();
+
+  masterGain = c.createGain(); masterGain.gain.value = P.vol;
+  analyser = c.createAnalyser(); analyser.fftSize = 1024;
+  reverbConv = c.createConvolver(); buildReverbBuf();
+  reverbWet = c.createGain(); reverbWet.gain.value = P.hall * 0.6;
+  reverbDry = c.createGain(); reverbDry.gain.value = 1;
+
+  vibratoOsc = c.createOscillator(); vibratoOsc.frequency.value = P.vibrate;
+  vibratoGain = c.createGain(); vibratoGain.gain.value = P.vibrato > 0 ? P.vibrato * 8 : 0;
+  vibratoOsc.connect(vibratoGain);
+  vibratoOsc.start();
+
+  masterGain.connect(reverbDry);
+  masterGain.connect(reverbConv);
+  reverbConv.connect(reverbWet);
+  reverbDry.connect(analyser);
+  reverbWet.connect(analyser);
+  analyser.connect(c.destination);
+}
+
+function buildReverbBuf() {
+  const c = getCtx(), sr = c.sampleRate;
+  const len = Math.floor(sr * 2.4);
+  const buf = c.createBuffer(2, len, sr);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++)
+      d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 1.2) * (ch?.92:1);
+  }
+  reverbConv.buffer = buf;
+}
+
+// ── Sound synthesis — brass physical model ──
+function getActiveInstruments() {
+  const active = [P.instrument];
+  // Add ensemble instruments
+  Object.entries(instParams).forEach(([inst, p]) => {
+    if (p.ensemble && inst !== P.instrument) active.push(inst);
+  });
+  return active;
+}
+
+function playNote(noteNum, vel=1) {
+  if (voices.has(noteNum)) stopNote(noteNum, true);
+  getCtx(); buildGraph();
+
+  const c = actx, now = c.currentTime;
+  const baseFreq = noteToFreq(noteNum);
+  const activeInsts = getActiveInstruments();
+  const allNodes = [];
+  const envGains = [];
+
+  activeInsts.forEach((instName, idx) => {
+    const profile = PROFILES[instName];
+    const ip = instParams[instName];
+    const mute = MUTE_PROFILES[ip.mute];
+
+    // Spread detuning for ensemble
+    const spreadCents = idx === 0 ? 0 : (idx % 2 === 0 ? 1 : -1) * (idx * P.spread);
+    const freq = baseFreq * Math.pow(2, spreadCents / 1200);
+
+    // Articulation envelope
+    const { atk, dec, sus, rel } = getArticEnvelope();
+    const vol = vel * (P.vol * 0.7 / activeInsts.length);
+
+    const envGain = c.createGain();
+    envGain.gain.setValueAtTime(0, now);
+    envGain.gain.linearRampToValueAtTime(vol, now + atk);
+    envGain.gain.exponentialRampToValueAtTime(Math.max(0.001, vol * sus), now + atk + dec);
+
+    // Cutoff — instrument + mute + brightness
+    const cutoff = Math.min(18000,
+      (profile.cutoffBase + ip.bright * (profile.cutoffBright - profile.cutoffBase)) * mute.cutoffMult
+    );
+
+    // Main lowpass filter
+    const mainFilt = c.createBiquadFilter();
+    mainFilt.type = 'lowpass';
+    mainFilt.frequency.value = cutoff;
+    mainFilt.Q.value = mute.Q;
+
+    // Body resonance
+    const bodyFilt = c.createBiquadFilter();
+    bodyFilt.type = 'peaking';
+    bodyFilt.frequency.value = profile.bodyFreq;
+    bodyFilt.Q.value = profile.bodyQ;
+    bodyFilt.gain.value = profile.bodyGain * (0.5 + ip.bright * 0.5);
+
+    // Notch for muted tones
+    let notchFilt = null;
+    if (mute.notch) {
+      notchFilt = c.createBiquadFilter();
+      notchFilt.type = 'notch';
+      notchFilt.frequency.value = mute.notch;
+      notchFilt.Q.value = 3;
+    }
+
+    // Growl LFO
+    let growlNode = null;
+    if (ip.growl > 0.01) {
+      growlNode = c.createGain();
+      const growlOsc = c.createOscillator();
+      growlOsc.frequency.value = 60 + ip.growl * 80;
+      growlOsc.type = 'sawtooth';
+      const growlAmt = c.createGain(); growlAmt.gain.value = ip.growl * 0.3;
+      growlOsc.connect(growlAmt); growlAmt.connect(growlNode.gain);
+      growlOsc.start(now); growlNode.gain.value = 0.7;
+      allNodes.push(growlOsc, growlAmt, growlNode);
+    }
+
+    // Air noise
+    let airNode = null;
+    if (ip.air > 0.01) {
+      const airBuf = c.createBuffer(1, c.sampleRate * 0.5, c.sampleRate);
+      const airData = airBuf.getChannelData(0);
+      for (let i = 0; i < airData.length; i++) airData[i] = Math.random()*2-1;
+      const airSrc = c.createBufferSource();
+      airSrc.buffer = airBuf; airSrc.loop = true;
+      const airFilt = c.createBiquadFilter(); airFilt.type = 'bandpass';
+      airFilt.frequency.value = freq * 3; airFilt.Q.value = 0.5;
+      const airGain = c.createGain(); airGain.gain.value = ip.air * 0.08;
+      airSrc.connect(airFilt); airFilt.connect(airGain); airGain.connect(envGain);
+      airSrc.start(now); allNodes.push(airSrc, airFilt, airGain);
+    }
+
+    // ── Buzz oscillator (lips) ──
+    const buzzOsc = c.createOscillator();
+    buzzOsc.type = 'sawtooth';
+    buzzOsc.frequency.value = freq;
+    const buzzFilt = c.createBiquadFilter();
+    buzzFilt.type = 'lowpass';
+    buzzFilt.frequency.value = profile.buzzFreq * 4;
+
+    // Vibrato routing
+    if (vibratoGain && P.vibrato > 0) {
+      vibratoGain.connect(buzzOsc.frequency);
+    }
+
+    // ── Additive partials ──
+    profile.partials.forEach(({ m, g }) => {
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq * m;
+      if (m === 1 && vibratoGain && P.vibrato > 0) vibratoGain.connect(osc.frequency);
+      const partialGain = c.createGain();
+      partialGain.gain.value = g * 0.6;
+      osc.connect(partialGain); partialGain.connect(bodyFilt);
+      osc.start(now); allNodes.push(osc, partialGain);
+    });
+
+    // Buzz → buzz filter → body
+    const buzzGain = c.createGain(); buzzGain.gain.value = 0.3;
+    buzzOsc.connect(buzzFilt); buzzFilt.connect(buzzGain); buzzGain.connect(bodyFilt);
+
+    // Chain: body → main filter → [notch] → [growl] → env → master
+    bodyFilt.connect(mainFilt);
+    let lastNode = mainFilt;
+    if (notchFilt) { lastNode.connect(notchFilt); lastNode = notchFilt; }
+    if (growlNode) { lastNode.connect(growlNode); lastNode = growlNode; }
+    lastNode.connect(envGain);
+    envGain.connect(masterGain);
+
+    buzzOsc.start(now);
+    allNodes.push(buzzOsc, buzzFilt, buzzGain, bodyFilt, mainFilt, envGain);
+    if (notchFilt) allNodes.push(notchFilt);
+    envGains.push(envGain);
+
+    // Fall articulation
+    if (P.artic === 'fall') {
+      buzzOsc.frequency.setTargetAtTime(freq * 0.6, now + atk + dec + 0.2, 0.15);
+      allNodes.forEach(n => {
+        if (n.frequency && n !== buzzOsc) {
+          // Don't apply to partial oscs to avoid audio glitches
+        }
+      });
+    }
+  });
+
+  voices.set(noteNum, { allNodes, envGains, startTime: now });
+
+  document.getElementById('note-readout').textContent = noteName(noteNum);
+  document.getElementById('freq-readout').textContent = Math.round(baseFreq * 10)/10 + ' Hz';
+  highlightKey(noteNum, true);
+  addBreathStrike(noteNum, baseFreq, vel);
+}
+
+function getArticEnvelope() {
+  const base = { atk: P.attack, dec: 0.1, sus: 0.85, rel: P.release };
+  switch(P.artic) {
+    case 'staccato': return { atk: 0.01, dec: 0.04, sus: 0.6, rel: 0.05 };
+    case 'legato':   return { atk: P.attack * 3, dec: 0.2, sus: 0.9, rel: P.release * 1.5 };
+    case 'marcato':  return { atk: 0.005, dec: 0.06, sus: 0.7, rel: 0.08 };
+    case 'fall':     return { atk: P.attack, dec: 0.15, sus: 0.8, rel: 0.6 };
+    default: return base;
+  }
+}
+
+function stopNote(noteNum, immediate=false) {
+  const v = voices.get(noteNum); if (!v) return;
+  const c = actx, now = c.currentTime;
+  const rel = immediate ? 0.02 : P.release * (P.artic === 'staccato' ? 0.15 : 1);
+
+  v.envGains.forEach(env => {
+    env.gain.cancelScheduledValues(now);
+    env.gain.setValueAtTime(env.gain.value, now);
+    env.gain.exponentialRampToValueAtTime(0.0001, now + rel);
+  });
+
+  setTimeout(() => {
+    v.allNodes.forEach(n => { try { n.stop?.(); n.disconnect?.(); } catch(e){} });
+  }, (rel + 0.1) * 1000);
+
+  voices.delete(noteNum);
+  highlightKey(noteNum, false);
+
+  if (voices.size === 0) {
+    document.getElementById('note-readout').textContent = '—';
+    document.getElementById('freq-readout').textContent = '— Hz';
+  }
+}
+
+// ── Breath display ──
+const breathCv = document.getElementById('breath-canvas');
+const breathCtx = breathCv.getContext('2d');
+const breathStrikes = [];
+
+function addBreathStrike(noteNum, freq, vel) {
+  breathStrikes.push({ freq, vel, age: 0, x: ((noteNum-21)/87) });
+}
+
+function drawBreath() {
+  breathCv.width = breathCv.offsetWidth;
+  breathCv.height = breathCv.offsetHeight;
+  const W = breathCv.width, H = breathCv.height;
+  breathCtx.clearRect(0,0,W,H);
+
+  // Background spectrum from analyser
+  if (analyser && voices.size > 0) {
+    const fbuf = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(fbuf);
+    const slice = W / fbuf.length;
+    for (let i = 0; i < fbuf.length; i++) {
+      const v = fbuf[i] / 255;
+      if (v < 0.02) continue;
+      const x = i * slice;
+      const barH = v * H * 0.85;
+      breathCtx.fillStyle = `rgba(200,136,10,${v * 0.5})`;
+      breathCtx.fillRect(x, H - barH, Math.max(1, slice), barH);
+    }
+  }
+
+  // Breath wave overlay
+  if (analyser) {
+    const tbuf = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteTimeDomainData(tbuf);
+    breathCtx.beginPath();
+    breathCtx.strokeStyle = 'rgba(224,168,32,0.6)';
+    breathCtx.lineWidth = 1.5;
+    breathCtx.shadowColor = '#c8880a'; breathCtx.shadowBlur = 4;
+    for (let i = 0; i < tbuf.length; i++) {
+      const x = i/tbuf.length*W;
+      const y = (tbuf[i]/128-1)*(H*0.35)+H/2;
+      i===0?breathCtx.moveTo(x,y):breathCtx.lineTo(x,y);
+    }
+    breathCtx.stroke(); breathCtx.shadowBlur = 0;
+  } else {
+    breathCtx.beginPath();
+    breathCtx.strokeStyle = 'rgba(48,26,10,0.4)';
+    breathCtx.lineWidth = 1;
+    breathCtx.moveTo(0,H/2); breathCtx.lineTo(W,H/2);
+    breathCtx.stroke();
+  }
+
+  requestAnimationFrame(drawBreath);
+}
+
+// ── Key highlight ──
+function highlightKey(noteNum, on) {
+  document.querySelector(`.piano-key[data-note="${noteNum}"]`)?.classList.toggle('active', on);
+}
+
+// ── Build keyboard ──
+const WHITE_KEYS  = [0,2,4,5,7,9,11];
+const BLACK_SLOTS = [1,3,null,6,8,10,null];
+const KB_WHITE = {'a':0,'s':1,'d':2,'f':3,'g':4,'h':5,'j':6,'k':7};
+const KB_BLACK = {'w':0,'e':1,'t':3,'y':4,'u':5};
+let kbOctave = 4;
+const activeKeys = new Set();
+const KB_OCT_MIN=0, KB_OCT_MAX=7, KB_SLOT_H=20;
+
+function buildKb() {
+  const el = document.getElementById('keyboard'); if (!el) return;
+  el.innerHTML = '';
+  const base = kbOctave * 12 + 12;
+  for (let i = 0; i < 14; i++) {
+    const n = base + WHITE_KEYS[i%7] + Math.floor(i/7)*12;
+    const wk = document.createElement('div');
+    wk.className = 'key white piano-key'; wk.dataset.note = n;
+    wk.innerHTML = `<span class="key-lbl">${i<8?['A','S','D','F','G','H','J','K'][i]:''}</span>`;
+    wk.addEventListener('mousedown',e=>{e.preventDefault();handleOn(n);});
+    wk.addEventListener('mouseup',()=>handleOff(n));
+    wk.addEventListener('mouseleave',()=>{if(activeKeys.has(n))handleOff(n);});
+    wk.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();handleOn(n);},{passive:false});
+    wk.addEventListener('touchend',e=>{e.preventDefault();handleOff(n);},{passive:false});
+    el.appendChild(wk);
+  }
+  requestAnimationFrame(()=>{
+    el.querySelectorAll('.key.white').forEach((wk,i)=>{
+      const slot=BLACK_SLOTS[i%7]; if(slot==null)return;
+      const n=parseInt(wk.dataset.note)-WHITE_KEYS[i%7]+slot;
+      const bk=document.createElement('div');bk.className='key black piano-key';bk.dataset.note=n;
+      bk.style.left=(wk.offsetLeft+wk.offsetWidth*.62)+'px';
+      const lbl=['W','E','','T','Y','U',''][i];
+      if(i<7&&lbl)bk.innerHTML=`<span class="key-lbl">${lbl}</span>`;
+      bk.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();handleOn(n);});
+      bk.addEventListener('mouseup',()=>handleOff(n));
+      bk.addEventListener('mouseleave',()=>{if(activeKeys.has(n))handleOff(n);});
+      bk.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();handleOn(n);},{passive:false});
+      bk.addEventListener('touchend',e=>{e.preventDefault();handleOff(n);},{passive:false});
+      el.appendChild(bk);
+    });
+  });
+}
+
+function handleOn(n) { activeKeys.add(n); getCtx(); buildGraph(); playNote(n); }
+function handleOff(n) { activeKeys.delete(n); stopNote(n); }
+
+function buildOctWheel() {
+  const inner=document.getElementById('oct-inner');if(!inner)return;
+  inner.innerHTML='';
+  for(let o=KB_OCT_MAX;o>=KB_OCT_MIN;o--){
+    const s=document.createElement('div');
+    s.className='ow-slot'+(o===kbOctave?' cur':'');
+    s.textContent='C'+o;s.dataset.oct=o;inner.appendChild(s);
+  }
+  scrollOctWheel();
+}
+
+function scrollOctWheel() {
+  const inner=document.getElementById('oct-inner');if(!inner)return;
+  const wH=document.getElementById('oct-wheel').clientHeight||76;
+  inner.style.transform=`translateY(${wH/2-KB_SLOT_H/2-(KB_OCT_MAX-kbOctave)*KB_SLOT_H}px)`;
+  inner.querySelectorAll('.ow-slot').forEach(s=>s.classList.toggle('cur',parseInt(s.dataset.oct)===kbOctave));
+}
+
+(function(){
+  const wheel=document.getElementById('oct-wheel');if(!wheel)return;
+  let sy=null,so=null;
+  wheel.addEventListener('mousedown',e=>{sy=e.clientY;so=kbOctave;e.preventDefault();});
+  document.addEventListener('mousemove',e=>{
+    if(sy===null)return;
+    const n=Math.max(KB_OCT_MIN,Math.min(KB_OCT_MAX,so+Math.round((sy-e.clientY)/KB_SLOT_H)));
+    if(n!==kbOctave){kbOctave=n;scrollOctWheel();buildKb();}
+  });
+  document.addEventListener('mouseup',()=>{sy=null;});
+  wheel.addEventListener('wheel',e=>{
+    e.preventDefault();
+    kbOctave=Math.max(KB_OCT_MIN,Math.min(KB_OCT_MAX,kbOctave+(e.deltaY>0?-1:1)));
+    scrollOctWheel();buildKb();
+  },{passive:false});
+  wheel.addEventListener('click',e=>{
+    const s=e.target.closest('.ow-slot');
+    if(s){kbOctave=parseInt(s.dataset.oct);scrollOctWheel();buildKb();}
+  });
+})();
+
+document.addEventListener('keydown',e=>{
+  if(e.repeat||e.target.tagName==='INPUT')return;
+  const key=e.key.toLowerCase();
+  if(key==='z'){kbOctave=Math.max(KB_OCT_MIN,kbOctave-1);scrollOctWheel();buildKb();return;}
+  if(key==='x'){kbOctave=Math.min(KB_OCT_MAX,kbOctave+1);scrollOctWheel();buildKb();return;}
+  const base=kbOctave*12+12;let n=null;
+  if(KB_WHITE[key]!==undefined)n=base+WHITE_KEYS[KB_WHITE[key]];
+  else if(KB_BLACK[key]!==undefined){const s=BLACK_SLOTS[KB_BLACK[key]];if(s!=null)n=base+s;}
+  if(n!==null&&!activeKeys.has(n)){handleOn(n);document.querySelector(`.piano-key[data-note="${n}"]`)?.classList.add('active');}
+});
+document.addEventListener('keyup',e=>{
+  const key=e.key.toLowerCase();const base=kbOctave*12+12;let n=null;
+  if(KB_WHITE[key]!==undefined)n=base+WHITE_KEYS[KB_WHITE[key]];
+  else if(KB_BLACK[key]!==undefined){const s=BLACK_SLOTS[KB_BLACK[key]];if(s!=null)n=base+s;}
+  if(n!==null){handleOff(n);document.querySelector(`.piano-key[data-note="${n}"]`)?.classList.remove('active');}
+});
+
+// ── Instrument card selection ──
+document.querySelectorAll('.inst-card').forEach(card => {
+  card.addEventListener('click', e => {
+    if (e.target.closest('.mute-btn') || e.target.closest('.ens-toggle') || e.target.closest('canvas')) return;
+    document.querySelectorAll('.inst-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    P.instrument = card.dataset.inst;
+  });
+});
+
+// ── Mute buttons ──
+document.querySelectorAll('.mute-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const card = btn.closest('.inst-card');
+    const inst = card.dataset.inst;
+    card.querySelectorAll('.mute-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    instParams[inst].mute = btn.dataset.mute;
+  });
+});
+
+// ── Ensemble toggles ──
+document.querySelectorAll('.ens-toggle').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const inst = btn.dataset.inst;
+    instParams[inst].ensemble = !instParams[inst].ensemble;
+    btn.classList.toggle('on', instParams[inst].ensemble);
+    btn.textContent = instParams[inst].ensemble ? '✓ Ensemble' : '+ Ensemble';
+  });
+});
+
+// ── Articulation ──
+document.querySelectorAll('.artic-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.artic-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    P.artic = btn.dataset.artic;
+  });
+});
+
+// ── Knobs ──
+function drawKnob(cv) {
+  const min=parseFloat(cv.dataset.min),max=parseFloat(cv.dataset.max),val=parseFloat(cv.dataset.val);
+  const col=cv.dataset.color||'#c8880a';
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,r=W/2-3;
+  const t=(val-min)/(max-min);
+  const sA=Math.PI*.75,eA=Math.PI*2.25,cA=sA+t*(eA-sA);
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.beginPath();ctx.arc(cx,cy,r,sA,eA);
+  ctx.strokeStyle='#160c06';ctx.lineWidth=3;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,r,sA,cA);
+  ctx.strokeStyle=col;ctx.lineWidth=3;
+  ctx.shadowColor=col;ctx.shadowBlur=5;ctx.stroke();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(cx,cy,r*.52,0,Math.PI*2);
+  const g=ctx.createRadialGradient(cx-r*.12,cy-r*.12,0,cx,cy,r*.52);
+  g.addColorStop(0,'#261608');g.addColorStop(1,'#0e0906');
+  ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle='#301a0a';ctx.lineWidth=1;ctx.stroke();
+  const ix=cx+Math.cos(cA)*r*.33,iy=cy+Math.sin(cA)*r*.33;
+  ctx.beginPath();ctx.arc(ix,iy,r*.1,0,Math.PI*2);
+  ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=4;ctx.fill();ctx.shadowBlur=0;
+}
+
+function setupKnobs() {
+  document.querySelectorAll('canvas.knob').forEach(cv=>{
+    drawKnob(cv);
+    let sy=null,sv=null;
+    cv.addEventListener('mousedown',e=>{sy=e.clientY;sv=parseFloat(cv.dataset.val);e.preventDefault();getCtx();buildGraph();});
+    document.addEventListener('mousemove',e=>{
+      if(sy===null)return;
+      const min=parseFloat(cv.dataset.min),max=parseFloat(cv.dataset.max);
+      const val=Math.max(min,Math.min(max,sv+(sy-e.clientY)/130*(max-min)));
+      cv.dataset.val=val;drawKnob(cv);onKnob(cv.id,cv,val);
+    });
+    document.addEventListener('mouseup',()=>{sy=null;});
+  });
+}
+
+function fmt(v,d=2){return parseFloat(v).toFixed(d);}
+
+function onKnob(id, cv, val) {
+  const c = actx;
+  const t = c?.currentTime || 0;
+
+  // Per-instrument knobs
+  if (cv.dataset.inst) {
+    const inst = cv.dataset.inst;
+    const param = cv.dataset.param;
+    instParams[inst][param] = val;
+    const prefix = {trumpet:'t',flugelhorn:'f',frenchhorn:'h',trombone:'b',tuba:'u'}[inst];
+    const el = document.getElementById(`v-${prefix}-${param}`);
+    if (el) el.textContent = fmt(val);
+    return;
+  }
+
+  // Global knobs
+  ({
+    'k-vibrato':  ()=>{ P.vibrato=val; document.getElementById('v-vibrato').textContent=fmt(val); if(vibratoGain)vibratoGain.gain.setTargetAtTime(val*8,t,0.05); },
+    'k-vibrate':  ()=>{ P.vibrate=val; document.getElementById('v-vibrate').textContent=fmt(val,1); if(vibratoOsc)vibratoOsc.frequency.setTargetAtTime(val,t,0.05); },
+    'k-spread':   ()=>{ P.spread=val; document.getElementById('v-spread').textContent=fmt(val,0); },
+    'k-attack':   ()=>{ P.attack=val; document.getElementById('v-attack').textContent=fmt(val); },
+    'k-release':  ()=>{ P.release=val; document.getElementById('v-release').textContent=fmt(val); },
+    'k-hall':     ()=>{ P.hall=val; document.getElementById('v-hall').textContent=fmt(val); if(reverbWet)reverbWet.gain.setTargetAtTime(val*0.6,t,0.05); },
+    'k-vol':      ()=>{ P.vol=val; document.getElementById('v-vol').textContent=fmt(val); if(masterGain)masterGain.gain.setTargetAtTime(val,t,0.01); },
+  }[id]||(() =>{}))();
+}
+
+// ── Init ──
+buildKb();
+buildOctWheel();
+setupKnobs();
+drawBreath();
+
+window.addEventListener('resize', buildKb);
+</script>
+</body>
+</html>
